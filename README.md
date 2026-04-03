@@ -37,6 +37,36 @@ Or download a pre-built binary from [Releases](https://github.com/bluevisor/Matr
 | `+` / `-` | Zoom in / out |
 | `ESC` / `q` | Quit |
 
+## Terminal Version (Rust)
+
+Classic terminal rain using `crossterm` with 256-color RGB gradients.
+
+### Features
+
+- Smooth falling character streams with multi-shade gradient tails
+- Katakana, digits, and symbol character sets
+- Glitch mutations and white sparkle flashes
+- Randomized stream speeds, lengths, and burst spawns
+- In-app options menu (press `ESC`) to configure color theme, speed, and density
+- 8 color themes: Green, Amber, Cyan, Red, Blue, Purple, Pink, White
+- Handles terminal resizing on the fly
+
+### Build & Run
+
+```bash
+cargo run --bin matrix-rain --release
+```
+
+### Controls
+
+| Key | Action |
+|-----|--------|
+| `ESC` | Open / close options menu |
+| `q` / `Q` | Quit |
+| `↑` `↓` | Navigate menu |
+| `←` `→` | Cycle menu values |
+| `Enter` | Select menu item |
+
 ## Terminal Version (Python)
 
 Classic terminal rain using `curses` with 256-color gradients.
