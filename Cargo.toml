@@ -1,0 +1,27 @@
+[package]
+name = "matrix-rain"
+version = "0.1.0"
+edition = "2021"
+
+[[bin]]
+name = "matrix-rain"
+path = "src/main.rs"
+
+[[bin]]
+name = "matrix-rain-gpu"
+path = "src/bin/gpu.rs"
+
+[dependencies]
+crossterm = "0.29.0"
+rand = "0.8"
+
+# GPU dependencies (only used by gpu binary)
+wgpu = "23"
+winit = "0.30"
+ab_glyph = "0.2"
+bytemuck = { version = "1", features = ["derive"] }
+glam = "0.29"
+pollster = "0.4"
+image = { version = "0.25", default-features = false, features = ["png"] }
+env_logger = "0.11"
+log = "0.4"
