@@ -41,11 +41,10 @@ impl Stream {
         let layer_factor = 1.0 - (layer as f32 * 0.05);
         let speed = speed * layer_factor.max(0.4);
 
-        let char_count = rng.gen_range(1..=length / 2.max(1));
-        let chars: Vec<usize> = (0..char_count)
+        let chars: Vec<usize> = (0..length)
             .map(|_| rng.gen_range(0..charset_len))
             .collect();
-        let glitch_ttl = vec![0u32; chars.len()];
+        let glitch_ttl = vec![0u32; length];
 
         Stream {
             col,
@@ -68,16 +67,6 @@ impl Stream {
         if self.y > (num_rows + self.length + 20) as f32 {
             self.active = false;
             return;
-        }
-
-        // Add new char at head periodically (slower character cycling)
-        if rng.gen::<f64>() < 0.08 {
-            self.chars.insert(0, rng.gen_range(0..charset_len));
-            self.glitch_ttl.insert(0, 0);
-            if self.chars.len() > self.length {
-                self.chars.pop();
-                self.glitch_ttl.pop();
-            }
         }
 
         // Glitch mutations
