@@ -1,22 +1,10 @@
 use rand::Rng;
 
-// Character sets
-fn katakana_chars() -> Vec<char> {
-    // FF66 (ｦ) through FF9F (ﾟ) — skip punctuation at FF61-FF65 (｡｢｣､･)
-    (0xFF66u32..=0xFF9Fu32).filter_map(char::from_u32).collect()
-}
-
-fn digit_chars() -> Vec<char> {
-    "0123456789".chars().collect()
-}
-
-fn symbol_chars() -> Vec<char> {
-    "=*+-<>|~^".chars().collect()
-}
-
 pub fn char_set() -> Vec<char> {
-    let mut set = katakana_chars();
-    set.extend(digit_chars());
+    // Matrix Code NFI font: use lowercase + digits + symbols, no uppercase
+    let mut set: Vec<char> = ('a'..='z').collect();
+    set.extend('0'..='9');
+    set.extend("=*+-<>|~^!#$%&_@".chars());
     set
 }
 
@@ -93,7 +81,7 @@ impl Stream {
         }
 
         // Glitch mutations
-        for i in 2..self.chars.len() {
+        for i in 0..self.chars.len() {
             if self.glitch_ttl[i] > 0 {
                 self.glitch_ttl[i] -= 1;
                 if self.glitch_ttl[i] == 0 {

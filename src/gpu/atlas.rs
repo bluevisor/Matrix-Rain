@@ -19,9 +19,7 @@ pub struct GlyphAtlas {
 
 impl GlyphAtlas {
     pub fn new(chars: &[char], font_size: f32) -> Self {
-        // NotoSansJP variable font — ab_glyph uses default weight
-        // We thicken glyphs via dilation after rasterization
-        let font_data = include_bytes!("../../assets/NotoSansJP.ttf");
+        let font_data = include_bytes!("../../assets/MatrixCodeNFI.ttf");
         let font = FontRef::try_from_slice(font_data).expect("Failed to load font");
         let scale = PxScale::from(font_size);
         let scaled_font = font.as_scaled(scale);
