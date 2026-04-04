@@ -137,7 +137,7 @@ struct RainStream {
 impl RainStream {
     fn new(col: u16, height: u16, charset: Vec<char>) -> Self {
         let max_len = MAX_STREAM_LENGTH.min(height as usize - 1);
-        let min_len = MIN_STREAM_LENGTH.min(max_len).max(3);
+        let min_len = MIN_STREAM_LENGTH.min(max_len);
         let max_len = max_len.max(min_len);
         let mut s = RainStream {
             col,

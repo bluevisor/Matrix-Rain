@@ -49,7 +49,7 @@ impl Stream {
     fn make(col: usize, layer: usize, num_rows: usize, charset_len: usize, y: f32) -> Self {
         let mut rng = rand::thread_rng();
         let max_len = MAX_STREAM_LENGTH.min(num_rows);
-        let min_len = MIN_STREAM_LENGTH.min(max_len).max(3);
+        let min_len = MIN_STREAM_LENGTH.min(max_len);
         let length = rng.gen_range(min_len..=max_len);
         let layer_factor = (1.0 - layer as f32 * 0.05).max(0.4);
         let speed = rng.gen_range(STREAM_SPEED_MIN..=STREAM_SPEED_MAX) * layer_factor;
