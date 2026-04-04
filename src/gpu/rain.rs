@@ -12,7 +12,7 @@ const MIN_STREAM_LENGTH: usize = 5;
 const MAX_STREAM_LENGTH: usize = 42;
 const STREAM_SPEED_MIN: f32 = 0.5;
 const STREAM_SPEED_MAX: f32 = 4.0;
-const GLITCH_RATE: f64 = 0.0003;
+const GLITCH_RATE: f64 = 0.003; // per-stream chance, applied to head chars only
 const GLITCH_DURATION_MIN: u32 = 15;
 const GLITCH_DURATION_MAX: u32 = 40;
 const SPARKLE_RATE: f64 = 0.0004;
@@ -69,14 +69,15 @@ impl Stream {
             return;
         }
 
-        // Glitch mutations: occasional, settle back to stable after TTL
-        for i in 0..self.chars.len() {
+        // Glitch: occasional mutation on a single head char per stream
+        let glitch_window = (self.length / 4).max(3); // top quarter of stream
+        for i in 0..glitch_window.min(self.chars.len()) {
             if self.glitch_ttl[i] > 0 {
                 self.glitch_ttl[i] -= 1;
-                // TTL expired: char stays as-is, waits for next random trigger
             } else if rng.gen::<f64>() < self.glitch_rate {
                 self.chars[i] = rng.gen_range(0..charset_len);
                 self.glitch_ttl[i] = rng.gen_range(GLITCH_DURATION_MIN..=GLITCH_DURATION_MAX);
+                break; // only one char per stream per frame
             }
         }
     }
