@@ -199,7 +199,7 @@ impl RainStream {
         }
 
         // Glitch mutations
-        for i in 2..self.chars.len() {
+        for i in 0..self.chars.len() {
             if self.glitch_ttl[i] > 0 {
                 self.glitch_ttl[i] -= 1;
                 if self.glitch_ttl[i] == 0 {
