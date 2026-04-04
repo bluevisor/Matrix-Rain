@@ -10,7 +10,8 @@ use crate::gpu::rain::CharInstance;
 struct GlyphUniforms {
     view_proj: [[f32; 4]; 4],
     quad_size: [f32; 2],
-    _padding: [f32; 2],
+    time: f32,
+    _padding: f32,
 }
 
 pub struct Renderer {
@@ -40,6 +41,7 @@ pub struct Renderer {
     pub width: u32,
     pub height: u32,
     pub composite_uniforms: CompositeUniforms,
+    frame: u64,
 }
 
 impl Renderer {
@@ -108,7 +110,8 @@ impl Renderer {
         let glyph_uniforms = GlyphUniforms {
             view_proj: glam::Mat4::IDENTITY.to_cols_array_2d(),
             quad_size: [0.3, 0.5],
-            _padding: [0.0; 2],
+            time: 0.0,
+            _padding: 0.0,
         };
         let glyph_uniform_buffer = device.create_buffer_init(&wgpu::util::BufferInitDescriptor {
             label: Some("glyph_uniforms"),
@@ -183,10 +186,11 @@ impl Renderer {
             instance_capacity,
             direct_pipeline,
             postprocess,
-            enable_postprocess: false, // start with direct rendering to debug
+            enable_postprocess: false,
             width,
             height,
             composite_uniforms,
+            frame: 0,
         }
     }
 
@@ -455,11 +459,15 @@ impl Renderer {
     }
 
     pub fn render(&mut self, camera: &Camera, instances: &[CharInstance]) {
+        self.frame += 1;
+        let time = self.frame as f32 / 60.0;
+
         // Update uniforms
         let uniforms = GlyphUniforms {
             view_proj: camera.view_proj().to_cols_array_2d(),
             quad_size: [0.3, 0.5],
-            _padding: [0.0; 2],
+            time,
+            _padding: 0.0,
         };
         self.queue.write_buffer(&self.glyph_uniform_buffer, 0, bytemuck::bytes_of(&uniforms));
         self.postprocess.update_uniforms(&self.queue, &self.composite_uniforms);

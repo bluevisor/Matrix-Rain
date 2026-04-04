@@ -204,9 +204,6 @@ impl RainSimulation {
             let effective_fade = FADE_LENGTH.min(1.max(stream_len.saturating_sub(2)));
             let z = -(stream.layer as f32) * layer_spacing;
 
-            // Depth-based color shift: far layers lean cyan
-            let depth_ratio = stream.layer as f32 / self.num_layers.max(1) as f32;
-
             for (i, &char_idx) in stream.chars.iter().enumerate() {
                 let cy = stream.y - i as f32;
                 // Don't clip — let GPU frustum cull
@@ -254,12 +251,7 @@ impl RainSimulation {
                     (base_color, brightness)
                 };
 
-                // Depth color shift: far layers get cyan tint
-                let color = [
-                    color[0] * (1.0 - depth_ratio * 0.3),
-                    color[1],
-                    color[2] + depth_ratio * 0.15,
-                ];
+                let color = color;
 
                 instances.push(CharInstance {
                     position: [x, y, z],
