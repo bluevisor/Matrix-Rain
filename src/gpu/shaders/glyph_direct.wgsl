@@ -49,8 +49,14 @@ fn vs_main(
     let pos = positions[vertex_index];
     let uv_local = uvs[vertex_index];
 
+    // Rare horizontal glitch displacement (~0.2% of bands)
+    let band = floor(instance.position.y * 6.0);
+    let t_slot = floor(uniforms.time * 2.0);
+    let h = fract(sin(dot(vec2<f32>(band, t_slot), vec2<f32>(127.1, 311.7))) * 43758.5);
+    let glitch_shift = (fract(h * 39.4) - 0.5) * 0.6 * step(0.998, h);
+
     let world_pos = vec3<f32>(
-        instance.position.x + pos.x * uniforms.quad_size.x,
+        instance.position.x + pos.x * uniforms.quad_size.x + glitch_shift,
         instance.position.y + pos.y * uniforms.quad_size.y,
         instance.position.z,
     );

@@ -15,7 +15,7 @@ const STREAM_SPEED_MAX: f32 = 4.0;
 const GLITCH_RATE: f64 = 0.003; // per-stream chance, applied to head chars only
 const GLITCH_DURATION_MIN: u32 = 15;
 const GLITCH_DURATION_MAX: u32 = 40;
-const SPARKLE_RATE: f64 = 0.0004;
+const SPARKLE_RATE: f64 = 0.00003;
 const FADE_LENGTH: usize = 8;
 
 pub struct Stream {
