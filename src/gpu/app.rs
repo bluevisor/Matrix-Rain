@@ -54,9 +54,10 @@ impl ApplicationHandler for App {
 
         let mut renderer = Renderer::new(window.clone());
 
-        // Create atlas
+        // Create atlas and filter to only chars that rendered visible pixels
         let atlas = GlyphAtlas::new(&self.chars, 48.0);
         renderer.upload_atlas(&atlas);
+        self.chars = atlas.valid_chars.clone();
 
         let camera = Camera::new(size.width as f32 / size.height as f32);
 

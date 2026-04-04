@@ -15,6 +15,7 @@ pub struct GlyphAtlas {
     pub glyphs: HashMap<char, GlyphRect>,
     pub cell_width: f32,
     pub cell_height: f32,
+    pub valid_chars: Vec<char>, // chars that actually have visible pixels
 }
 
 impl GlyphAtlas {
@@ -100,6 +101,18 @@ impl GlyphAtlas {
             }
         }
 
+        // Only keep chars whose cell has at least one non-zero alpha pixel after dilation
+        let valid_chars: Vec<char> = chars.iter().enumerate().filter_map(|(i, &ch)| {
+            let ox = (i as u32 % cols) * cell_w;
+            let oy = (i as u32 / cols) * cell_h;
+            let has_pixels = (oy..oy + cell_h).any(|y| {
+                (ox..ox + cell_w).any(|x| {
+                    dilated[((y * atlas_w + x) * 4 + 3) as usize] > 0
+                })
+            });
+            if has_pixels { Some(ch) } else { None }
+        }).collect();
+
         GlyphAtlas {
             width: atlas_w,
             height: atlas_h,
@@ -107,6 +120,7 @@ impl GlyphAtlas {
             glyphs,
             cell_width: cell_w as f32,
             cell_height: cell_h as f32,
+            valid_chars,
         }
     }
 }
