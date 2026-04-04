@@ -213,7 +213,7 @@ impl RainSimulation {
             let stream_len = stream.chars.len();
             let effective_fade = FADE_LENGTH.min(1.max(stream_len.saturating_sub(2)));
             let z = -(stream.layer as f32) * layer_spacing;
-            let depth_dim = 1.0 - (stream.layer as f32 / self.num_layers as f32) * 0.75;
+            let depth_dim = 1.0 - (stream.layer as f32 / self.num_layers as f32) * 0.90;
 
             for (i, &char_idx) in stream.chars.iter().enumerate() {
                 let cy = stream.y - i as f32;
