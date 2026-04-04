@@ -213,6 +213,7 @@ impl RainSimulation {
             let stream_len = stream.chars.len();
             let effective_fade = FADE_LENGTH.min(1.max(stream_len.saturating_sub(2)));
             let z = -(stream.layer as f32) * layer_spacing;
+            let depth_dim = 1.0 - (stream.layer as f32 / self.num_layers as f32) * 0.75;
 
             for (i, &char_idx) in stream.chars.iter().enumerate() {
                 let cy = stream.y - i as f32;
@@ -261,15 +262,13 @@ impl RainSimulation {
                     (base_color, brightness)
                 };
 
-                let color = color;
-
                 instances.push(CharInstance {
                     position: [x, y, z],
                     uv_rect: [uv.u_min, uv.v_min, uv.u_max, uv.v_max],
                     color: [
-                        color[0] * brightness,
-                        color[1] * brightness,
-                        color[2] * brightness,
+                        color[0] * brightness * depth_dim,
+                        color[1] * brightness * depth_dim,
+                        color[2] * brightness * depth_dim,
                         1.0,
                     ],
                 });
