@@ -1,11 +1,26 @@
 use rand::Rng;
 
 pub fn char_set() -> Vec<char> {
-    // Matrix Code NFI font: use lowercase + digits + symbols, no uppercase
+    // Matrix Code NFI font: lowercase + digits + symbols, no uppercase, no space
     let mut set: Vec<char> = ('a'..='z').collect();
     set.extend('0'..='9');
     set.extend("=*+-<>|~^!#$%&_@".chars());
+    set.retain(|&c| c != ' ');
     set
+}
+
+// Camera constants (must match app.rs / camera.rs)
+const CAMERA_Z: f32 = 5.0;
+const FOV_HALF_TAN: f32 = 0.57735; // tan(30°), FOV=60°
+const ROW_HEIGHT: f32 = 0.5;
+const LAYER_SPACING: f32 = 8.0;
+
+/// Compute the visible row range [top, bottom] for a given layer depth.
+fn layer_vis_rows(layer: usize, num_rows: usize) -> (i32, i32) {
+    let dist = CAMERA_Z + layer as f32 * LAYER_SPACING;
+    let half = (FOV_HALF_TAN * dist / ROW_HEIGHT).ceil() as i32;
+    let center = num_rows as i32 / 2;
+    (center - half, center + half)
 }
 
 const MIN_STREAM_LENGTH: usize = 5;
@@ -31,40 +46,47 @@ pub struct Stream {
 }
 
 impl Stream {
-    pub fn new(col: usize, layer: usize, num_rows: usize, charset_len: usize) -> Self {
+    fn make(col: usize, layer: usize, num_rows: usize, charset_len: usize, y: f32) -> Self {
         let mut rng = rand::thread_rng();
         let max_len = MAX_STREAM_LENGTH.min(num_rows);
         let min_len = MIN_STREAM_LENGTH.min(max_len).max(3);
         let length = rng.gen_range(min_len..=max_len);
-        let speed = rng.gen_range(STREAM_SPEED_MIN..=STREAM_SPEED_MAX);
-        // Layer-based speed reduction: farther layers are slower
-        let layer_factor = 1.0 - (layer as f32 * 0.05);
-        let speed = speed * layer_factor.max(0.4);
-
-        let chars: Vec<usize> = (0..length)
-            .map(|_| rng.gen_range(0..charset_len))
-            .collect();
+        let layer_factor = (1.0 - layer as f32 * 0.05).max(0.4);
+        let speed = rng.gen_range(STREAM_SPEED_MIN..=STREAM_SPEED_MAX) * layer_factor;
+        let chars: Vec<usize> = (0..length).map(|_| rng.gen_range(0..charset_len)).collect();
         let glitch_ttl = vec![0u32; length];
-
         Stream {
-            col,
-            layer,
-            y: rng.gen_range(-(length as f32) - 20.0..-5.0),
-            speed,
-            length,
-            chars,
-            glitch_ttl,
+            col, layer, y, speed, length, chars, glitch_ttl,
             glitch_rate: GLITCH_RATE * rng.gen_range(0.5..2.0),
             active: true,
         }
     }
 
+    /// Spawn from just above the visible top — for ongoing respawn.
+    pub fn new(col: usize, layer: usize, num_rows: usize, charset_len: usize) -> Self {
+        let mut rng = rand::thread_rng();
+        let (vis_top, _) = layer_vis_rows(layer, num_rows);
+        // Start fully above visible top: head enters from outside screen
+        let y = rng.gen_range((vis_top - MAX_STREAM_LENGTH as i32 - 3) as f32..vis_top as f32);
+        Self::make(col, layer, num_rows, charset_len, y)
+    }
+
+    /// Spawn at a random position inside the visible range — for initial fill.
+    pub fn new_scattered(col: usize, layer: usize, num_rows: usize, charset_len: usize) -> Self {
+        let mut rng = rand::thread_rng();
+        let (vis_top, vis_bottom) = layer_vis_rows(layer, num_rows);
+        let y = rng.gen_range(vis_top as f32..vis_bottom as f32);
+        Self::make(col, layer, num_rows, charset_len, y)
+    }
+
     pub fn update(&mut self, num_rows: usize, charset_len: usize) {
         let mut rng = rand::thread_rng();
 
-        self.y += self.speed * 0.1; // scale down for smoother movement
+        self.y += self.speed * 0.1;
 
-        if self.y > (num_rows + self.length + 20) as f32 {
+        // Deactivate once tail has fully exited the visible bottom
+        let (_, vis_bottom) = layer_vis_rows(self.layer, num_rows);
+        if self.y - self.length as f32 > vis_bottom as f32 + 3.0 {
             self.active = false;
             return;
         }
@@ -137,7 +159,7 @@ impl RainSimulation {
             let layer_density = density * (1.0 - layer as f64 * 0.06);
             for col in 0..num_cols {
                 if rng.gen::<f64>() < layer_density {
-                    streams.push(Stream::new(col, layer, num_rows, charset_len));
+                    streams.push(Stream::new_scattered(col, layer, num_rows, charset_len));
                 }
             }
         }

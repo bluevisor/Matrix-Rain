@@ -57,6 +57,7 @@ fn char_set() -> Vec<char> {
     let mut set = katakana_chars();
     set.extend(digit_chars());
     set.extend(symbol_chars());
+    set.retain(|&c| c != ' ');
     set
 }
 
